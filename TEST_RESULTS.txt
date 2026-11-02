@@ -1,0 +1,23 @@
+Resultado de pruebas automatizadas
+=================================
+
+Comando ejecutado:
+pytest -v --cov=main --cov=database --cov=models --cov=schemas --cov-report=term-missing
+
+Resultado:
+9 pruebas aprobadas, 0 fallidas.
+Cobertura total reportada: 100%.
+
+Cobertura por módulo:
+- database.py: 100%
+- main.py: 100%
+- models.py: 100%
+- schemas.py: 100%
+
+Las pruebas usan SQLite aislado y no necesitan un servidor MySQL.
+
+Alcance de la validación:
+- Se ejecutaron las pruebas automatizadas en el entorno de trabajo disponible.
+- Se verificó la sintaxis Python y se pudo interpretar docker-compose.yml como YAML.
+- No se ejecutó docker compose build/up en este entorno; por tanto, el arranque real de los contenedores debe comprobarse en Docker Desktop del equipo.
+- La cobertura corresponde a los módulos main, database, models y schemas incluidos en el comando. No representa funcionalidades que no existen todavía (paginación e historial de pedidos).

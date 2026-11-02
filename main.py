@@ -1,12 +1,18 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import time
 import models, schemas, database
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create database tables when the API starts."""
+    models.Base.metadata.create_all(bind=database.engine)
+    yield
 
 
-models.Base.metadata.create_all(bind=database.engine)
+app = FastAPI(lifespan=lifespan)
+
 
 @app.post("/users/")
 def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
@@ -16,27 +22,29 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)
     db.refresh(U)
     return U
 
+
 @app.get("/products/")
 def get_products(db: Session = Depends(database.get_db)):
-    time.sleep(2) 
+    time.sleep(2)
     return db.query(models.Product).all()
+
 
 @app.post("/orders/")
 def process_order(order: schemas.OrderCreate, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == order.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
+
     total = 0
     for pid in order.product_ids:
         prod = db.query(models.Product).filter(models.Product.id == pid).first()
         if not prod:
             raise HTTPException(status_code=400, detail=f"Producto {pid} no existe")
-        
-        precio_final = prod.price - 10 if prod.price > 100 else prod.price 
-        
+
+        precio_final = prod.price - 10 if prod.price > 100 else prod.price
+
         total += precio_final
-        
+
         prod.stock = prod.stock - 1
         db.add(prod)
 
